@@ -1,3 +1,4 @@
+import {createAccessLink} from './access-link.ts';
 import {createAdmin} from './server.ts';
 import { z } from 'npm:zod@3.25.76';
 import { load, save, assertRole, ensureOrigin, errorResponse } from './server.ts';
@@ -6,7 +7,7 @@ import { dateToday, weekIndex, diffDays, view } from './model.ts';
 const text=(max=2000)=>z.string().trim().max(max);
 const date=z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(s=>!Number.isNaN(Date.parse(s+'T12:00:00Z')),'Data inválida');
 export async function GET(req:Request) {try{const c=await load(req);return Response.json(view(c.state,c.me),{headers:{'Cache-Control':'no-store'}})}catch(e){return errorResponse(e)}}
-export async function POST(req:Request) {let createdUserId:string|null=null;try {
+export async function POST(req:Request) {let createdUserId:string|null=null;let activationLink:string|null=null;try {
  ensureOrigin(req);if(Number(req.headers.get('content-length'))>100000)throw new Error('413|Conteúdo muito grande.');
  const body:any=await req.json();const c=await load(req);if(c.me.isModel)throw new Error('403|A paciente modelo é somente para visualização.');const {state:s,me}=c;const action=z.string().parse(body.action);const d=body.data||{};let message='Salvo com sucesso.';
  const clinical=['admin','nutri','endo'];const nutrition=['admin','nutri'];const team=['admin','nutri','endo','assistente'];const today=dateToday();const wi=weekIndex(s,today);const scoring=wi>=0&&wi<6&&today<=s.config.end;
@@ -27,8 +28,9 @@ export async function POST(req:Request) {let createdUserId:string|null=null;try 
    if(error||!account.user)throw new Error('422|Não foi possível criar o acesso. Confira o e-mail; ele pode já ter uma conta.');
    createdUserId=account.user.id;
    s.people.push({...p,id:account.user.id,active:true});
-   message='Cadastro salvo. O acesso já está liberado com o e-mail e código de acesso.';
+   activationLink=await createAccessLink(p.email,p.role);message='Cadastro salvo. Envie o link de primeiro acesso para a pessoa definir a senha.';
   }
+ } else if(action==='accessLink'){assertRole(me,['admin']);const p=s.people.find(p=>p.id===d.person&&p.active);if(!p)throw new Error('404|Cadastro ativo não encontrado.');activationLink=await createAccessLink(p.email,p.role);message='Link gerado. Envie diretamente para a pessoa definir a senha.';
  } else if(action==='active'||action==='kit') {assertRole(me,team); const p=participant(z.string().parse(d.person));if(action==='active') {assertRole(me,['admin','nutri']);p.active=z.boolean().parse(d.value)}else p.kit=z.boolean().parse(d.value);
  } else if(action==='config') {assertRole(me,nutrition);const config=z.object({title:text(100).min(1),start:date,scoringStart:date,end:date,support:text(1500)}).parse(d);if(config.start>config.scoringStart||config.scoringStart>config.end)throw new Error('422|Confira a sequência das datas.');s.config=config;
  } else if(action==='week') {assertRole(me,nutrition);const index=z.number().int().min(0).max(5).parse(d.index);s.weeks[index]=z.object({title:text(100).min(1),main:text(800),food:text(800),move:text(800),care:text(800),proof:z.boolean(),advice:text(1500).optional()}).parse(d);
@@ -57,5 +59,5 @@ export async function POST(req:Request) {let createdUserId:string|null=null;try 
  } else if(action==='report') {const p=s.posts.find(p=>p.id===d.id);if(!p)throw new Error('404|Publicação não encontrada.');p.reported=true;
  } else if(action==='hidePost') {const p=s.posts.find(p=>p.id===d.id);if(!p)throw new Error('404|Publicação não encontrada.');if(p.person!==me.id)assertRole(me,nutrition);p.hidden=true;
  } else throw new Error('422|Ação não reconhecida.');
- await save(c,action);return Response.json({message,data:view(s,me)},{headers:{'Cache-Control':'no-store'}});
+ await save(c,action);return Response.json({message,data:view(s,me),...(activationLink?{activationLink}:{})},{headers:{'Cache-Control':'no-store'}});
  }catch(e){if(createdUserId){await createAdmin().auth.admin.deleteUser(createdUserId).catch(()=>{});}if(e instanceof z.ZodError)return Response.json({error:'Confira os campos: '+e.issues.map(i=>i.path.join('.')||'formulário').join(', ')},{status:422});return errorResponse(e)}}

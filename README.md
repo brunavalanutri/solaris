@@ -1,42 +1,35 @@
 # Solaris
 
-Aplicativo estático com API protegida no Supabase exclusivo do SOLARIS.
+Aplicativo de acompanhamento de Nutrição + Endocrinologia com interface estática e API protegida no Supabase exclusivo do SOLARIS.
 
-## Acesso por e-mail e código
+## Acesso
 
-Pacientes: https://solaris-pi-black.vercel.app/paciente
-Equipe: https://solaris-pi-black.vercel.app/equipe
-Paciente modelo isolada: https://solaris-pi-black.vercel.app/modelo
+- Pacientes: https://solaris-pi-black.vercel.app/paciente
+- Administradora e profissionais: https://solaris-pi-black.vercel.app/equipe
+- Paciente modelo isolada: https://solaris-pi-black.vercel.app/modelo
 
-As sessões da equipe, pacientes e modelo são independentes. Uma sessão de paciente não redireciona a área da equipe. A API valida a identidade e o perfil; a URL não concede permissões.
+O login é por e-mail cadastrado e senha definida pela própria pessoa no primeiro acesso. As sessões de cada área são independentes.
 
-Somente e-mails ativos cadastrados na área correta recebem código. Não há cadastro público de participantes. A administradora inicial usa brunavalanutri@gmail.com na área da equipe. O servidor prepara sua conta inicial sem senha; somente o código recebido por e-mail permite entrar.
+## Cadastro e primeiro acesso
 
-A administradora cria os cadastros de participantes e profissionais dentro da plataforma, sem definir senha. Data de nascimento é opcional e não é credencial de acesso. Não há link público de demonstração.
+Somente a administradora cadastra participantes e profissionais. Ao salvar, o sistema cria a conta e mostra um link individual para definir senha. A administradora copia e compartilha esse link diretamente com a pessoa cadastrada. Não depende de envio de e-mail pelo Supabase, código numérico ou confirmação por e-mail.
 
-## Configuração do e-mail no Supabase
+Ao abrir o link, a pessoa vê o e-mail da conta validada, escolhe e confirma uma senha de pelo menos 8 caracteres. Depois entra normalmente com e-mail e senha.
 
-Em Authentication > Email Templates > Magic Link, configure assunto "Seu código de acesso ao Solaris" e conteúdo:
+Os links usam tokens nativos de uso único do Supabase Auth, com prazo de validade, no fragmento da URL. Nenhuma senha ou token de ativação é armazenado no documento da turma, na auditoria ou no GitHub. O link não deve ser compartilhado com outras pessoas.
 
-```html
-<h2>Seu acesso ao Solaris</h2>
-<p>Digite este código no aplicativo:</p>
-<p style="font-size:28px;font-weight:bold;letter-spacing:4px">{{ .Token }}</p>
-<p>Se você não solicitou este acesso, ignore este e-mail.</p>
-```
+A administradora pode gerar outro link usando "Link de acesso" no cadastro da pessoa ou na lista de profissionais. O novo link também permite redefinir uma senha esquecida.
 
-Este ajuste é necessário para receber o código numérico no lugar do link padrão. Não configure chaves secretas na Vercel.
+A conta inicial da administradora usa brunavalanutri@gmail.com. Seu link de ativação é fornecido diretamente à titular e não consta neste repositório.
 
-## Publicação
+## Publicação e proteção
 
-Importe este repositório na Vercel. vercel.json publica somente index.html. static-src preserva o código React e supabase/functions/solaris-api a API.
+Importe este repositório na Vercel. vercel.json publica somente index.html. Não é necessário cadastrar variáveis na Vercel. static-src preserva o código React; supabase/functions/solaris-api preserva a API.
 
-A paciente modelo usa uma conta Auth identificada pelo servidor e recebe somente dados fictícios em modo de visualização, sem ler o banco da turma ou suas publicações. Não usa os códigos de e-mail de pacientes reais.
+A API confere a identidade e o perfil antes de retornar dados. A URL não concede permissões. A paciente modelo recebe somente dados fictícios em modo de visualização, sem acessar registros reais.
 
-Testes cobrem envio restrito, perfis, sessões independentes, código, ausência de senha, cadastro, proteção de dados e isolamento do modelo. O envio real de e-mail depende da configuração do modelo e do serviço de e-mail do projeto Supabase.
+As rotas antigas de solicitação de código estão desativadas. A data de nascimento é opcional no cadastro e não é senha.
 
-## Configuração confirmada no painel
+## Validação
 
-Site URL foi corrigido de localhost para https://solaris-pi-black.vercel.app. Os retornos /equipe, /paciente e / foram salvos no Supabase. Cada solicitação de acesso informa explicitamente o retorno de sua área.
-
-O painel informou que personalizar o template no plano gratuito exige SMTP próprio; também oferece personalização com o plano Pro. Até configurar esse envio, o template padrão envia um link de acesso. A tela aceita o link e também permite digitar um código se o template for habilitado posteriormente. O código numérico por e-mail ainda não foi homologado.
+Testados: cadastro restrito à administradora, geração protegida de link, ausência de senha/token no estado, formulário de senha e confirmação, login nas duas áreas e isolamento do modelo. Um teste real com a conta modelo validou token de uso único, definição de senha e login com a senha definida; o acesso original do modelo foi restaurado após o teste.
