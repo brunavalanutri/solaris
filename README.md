@@ -1,21 +1,21 @@
 # Solaris
 
-Aplicativo de Nutrição + Endocrinologia, com interface estática e API protegida no Supabase exclusivo do Solaris.
+Aplicativo estático de acompanhamento de Nutrição + Endocrinologia. Importe este repositório na Vercel; vercel.json configura a publicação. Não são necessárias variáveis de ambiente na Vercel.
 
-## Publicar na Vercel
+## Acesso
 
-Importe brunavalanutri/solaris, branch main. O vercel.json configura automaticamente a publicação apenas do index.html. Não precisa instalar ferramentas no computador nem cadastrar variáveis de ambiente na Vercel.
+Login: e-mail cadastrado pela administradora. Senha inicial: data de nascimento no formato DDMMAAAA, sem barras. Ao cadastrar uma participante ou profissional, a administradora informa nome, e-mail e data de nascimento. O servidor cria a conta no Supabase e libera o acesso ao salvar, sem cadastro público de participantes.
 
-A API solaris-api já está publicada no projeto Supabase siffjzbdeqgycpokvrcg. Nenhuma chave secreta é incluída na interface. A chave pública permite iniciar login; a API verifica a identidade e o cadastro antes de retornar dados.
+Somente a administradora cadastra pessoas. As regras de autorização e os dados permanecem na API solaris-api do Supabase SOLARIS. A senha não é gravada no documento da turma ou na auditoria. A demonstração foi retirada da tela de entrada.
 
-Antes de criar a conta, configure no Supabase Authentication > URL Configuration o Site URL com o endereço final da Vercel e inclua esse endereço com barra final nas Redirect URLs. O retorno desta versão é a página inicial.
+## Ativação inicial da administradora
 
-A administradora inicial usa brunavalanutri@gmail.com, cria a própria senha com pelo menos 12 caracteres e confirma o e-mail. Depois, a equipe cadastra as participantes no painel.
+Na tela de entrada, Primeiro acesso da administradora permite ativar somente brunavalanutri@gmail.com, com confirmação por e-mail. Informe sua própria data de nascimento e confirme o e-mail antes de entrar. Essa é uma exceção para iniciar a administração; os demais acessos são cadastrados dentro da plataforma.
 
-## Organização
+No Supabase Authentication > URL Configuration, configure Site URL com https://solaris-pi-black.vercel.app e inclua https://solaris-pi-black.vercel.app/ nas Redirect URLs para o retorno da confirmação inicial.
 
-index.html contém a interface pronta para publicação. static-src preserva o código React usado para gerar a interface. supabase/functions/solaris-api preserva o código da API publicada. O código Next.js anterior foi preservado como referência; o vercel.json seleciona explicitamente a publicação estática.
+## Código
 
-Os testes de regras, permissões e navegação em DOM passaram. A API real rejeitou chamadas sem token e com token inválido. Login e arquivos com conta real precisam de validação após publicar.
+index.html: interface pronta. static-src: componentes de origem. supabase/functions/solaris-api: API publicada. O código Next.js anterior permanece como referência; a publicação usa somente o HTML estático.
 
-APP-PACIENTE e WhatsApp usam projetos separados e não foram alterados.
+Testes de cadastro administrativo, datas, senha, duplicação e falha de gravação passaram com Auth simulado. A navegação da tela de entrada foi testada em DOM. Login de uma pessoa real ainda depende da ativação e cadastro.
