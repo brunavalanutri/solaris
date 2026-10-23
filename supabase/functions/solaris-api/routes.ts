@@ -39,7 +39,7 @@ export async function POST(req:Request) {let createdUserId:string|null=null;let 
  } else if(action==='consent') {if(me.role!=='participante')throw new Error('403|Esta confirmação pertence à participante.');me.consent=z.literal(true).parse(d.value);
  } else if(action==='habits'||action==='mission'||action==='checkin') {
   assertRole(me,['participante']); if(!me.consent)throw new Error('422|Leia e aceite os termos de participação primeiro.');
-  if(today<s.config.start||today>s.config.end)throw new Error('422|Os registros estão disponíveis durante o programa.');
+  if(today>s.config.end||(action!=='habits'&&today<s.config.start))throw new Error('422|Os registros estão disponíveis durante o programa.');
   if(d.date!==today)throw new Error('422|Registros anteriores estão disponíveis apenas para consulta.');
   let type=action;let value:any;let points=0;let status:'validado'|'pendente'='validado';
   if(action==='habits'){value=z.object({water:z.number().min(0).max(15),sleep:z.number().min(0).max(24),mood:z.number().int().min(1).max(5),notes:text(2000)}).parse(d.value);points=scoring?5:0;}
