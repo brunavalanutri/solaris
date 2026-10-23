@@ -12,7 +12,7 @@ export async function POST(req:Request) {let createdUserId:string|null=null;try 
  const clinical=['admin','nutri','endo'];const nutrition=['admin','nutri'];const team=['admin','nutri','endo','assistente'];const today=dateToday();const wi=weekIndex(s,today);const scoring=wi>=0&&wi<6&&today<=s.config.end;
  const participant=(id:string)=>{const p=s.people.find(p=>p.id===id&&p.role==='participante');if(!p)throw new Error('404|Participante não encontrada.');return p;};
  if(action==='person') {
-  assertRole(me,['admin']);const p=z.object({id:z.string().optional(),name:text(100).min(2),email:z.string().trim().email().transform(s=>s.toLowerCase()),birthDate:date.refine(v=>{const t=Date.parse(v+'T12:00:00Z');return Number.isFinite(t)&&v===new Date(t).toISOString().slice(0,10)&&v<dateToday()},'Data de nascimento inválida'),phone:text(30).optional(),goal:text(1000).optional(),role:z.enum(['admin','nutri','endo','assistente','participante']).default('participante')}).parse(d);
+  assertRole(me,['admin']);const p=z.object({id:z.string().optional(),name:text(100).min(2),email:z.string().trim().email().transform(s=>s.toLowerCase()),birthDate:z.preprocess(v=>v===''?undefined:v,date.refine(v=>{const t=Date.parse(v+'T12:00:00Z');return Number.isFinite(t)&&v===new Date(t).toISOString().slice(0,10)&&v<dateToday()},'Data de nascimento inválida').optional()),phone:text(30).optional(),goal:text(1000).optional(),role:z.enum(['admin','nutri','endo','assistente','participante']).default('participante')}).parse(d);
   if(p.role!=='participante')assertRole(me,['admin']);
   const existing=p.id?s.people.find(v=>v.id===p.id):undefined;
   if(existing?.id===s.owner&&p.role!=='admin')throw new Error('403|A administradora principal não pode ser rebaixada.');
@@ -23,12 +23,11 @@ export async function POST(req:Request) {let createdUserId:string|null=null;try 
    if(existing.email!==p.email)throw new Error('422|O e-mail de uma conta existente não pode ser alterado neste cadastro.');
    Object.assign(existing,p);
   }else{
-   const password=p.birthDate.slice(8,10)+p.birthDate.slice(5,7)+p.birthDate.slice(0,4);
-   const {data:account,error}=await createAdmin().auth.admin.createUser({email:p.email,password,email_confirm:true});
+     const {data:account,error}=await createAdmin().auth.admin.createUser({email:p.email,email_confirm:true});
    if(error||!account.user)throw new Error('422|Não foi possível criar o acesso. Confira o e-mail; ele pode já ter uma conta.');
    createdUserId=account.user.id;
    s.people.push({...p,id:account.user.id,active:true});
-   message='Cadastro salvo. O acesso já está liberado com o e-mail e a data de nascimento (DDMMAAAA).';
+   message='Cadastro salvo. O acesso já está liberado com o e-mail e código de acesso.';
   }
  } else if(action==='active'||action==='kit') {assertRole(me,team); const p=participant(z.string().parse(d.person));if(action==='active') {assertRole(me,['admin','nutri']);p.active=z.boolean().parse(d.value)}else p.kit=z.boolean().parse(d.value);
  } else if(action==='config') {assertRole(me,nutrition);const config=z.object({title:text(100).min(1),start:date,scoringStart:date,end:date,support:text(1500)}).parse(d);if(config.start>config.scoringStart||config.scoringStart>config.end)throw new Error('422|Confira a sequência das datas.');s.config=config;

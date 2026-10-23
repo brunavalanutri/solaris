@@ -8,10 +8,10 @@ const person={name:'Participante teste',email:'teste@example.test',birthDate:'19
 async function call(data){const r=await route.POST(new Request('https://solaris.test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'person',data})}));return {status:r.status,body:await r.json()};}
 (async()=>{
  for(const role of ['nutri','assistente','participante']){who=role;assert.equal((await call(person)).status,403)}assert.equal(created.length,0);who='admin';
- for(const birthDate of ['', '2024-02-31','2099-01-01'])assert.equal((await call({...person,birthDate})).status,422);assert.equal(created.length,0);
- let r=await call(person);assert.equal(r.status,200);assert.equal(created[0].password,'05031990');assert.equal(created[0].email_confirm,true);assert.equal(state.people[1].id,'auth-1');assert.equal(state.people[1].password,undefined);assert.equal((await call(person)).status,422);assert.equal(created.length,1);
+ for(const birthDate of ['2024-02-31','2099-01-01'])assert.equal((await call({...person,birthDate})).status,422);assert.equal(created.length,0);
+ let r=await call(person);assert.equal(r.status,200);assert.equal(created[0].password,undefined);assert.equal(created[0].email_confirm,true);assert.equal(state.people[1].id,'auth-1');assert.equal(state.people[1].password,undefined);assert.equal((await call(person)).status,422);assert.equal(created.length,1);
  failSave=true;r=await call({...person,email:'conflict@example.test'});assert.equal(r.status,409);assert.deepEqual(deleted,['auth-2']);assert.equal(state.people.length,2);failSave=false;
  failAuth=true;r=await call({...person,email:'existing@example.test'});assert.equal(r.status,422);assert.equal(state.people.length,2);assert.equal(deleted.length,1);
  assert.equal(model.view(state,{id:'assistant',email:'a@example.test',name:'A',role:'assistente',active:true}).people[1].birthDate,undefined);
- console.log('PASS: admin-only provisioning, real date validation, DDMMAAAA including leading zero, confirmed Auth creation, duplicate handling, private DOB, no plaintext password stored and cleanup on save conflict.');
+ console.log('PASS: admin-only provisioning, real date validation, passwordless account creation, confirmed Auth creation, duplicate handling, private DOB, no plaintext password stored and cleanup on save conflict.');
 })().catch(e=>{console.error(e);process.exit(1)});

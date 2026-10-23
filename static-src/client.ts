@@ -1,7 +1,7 @@
 import {createClient as supabase} from '@supabase/supabase-js';
 export const URL='https://siffjzbdeqgycpokvrcg.supabase.co';
 export const KEY='sb_publishable_jRzdUHtL75UljFN2RJJ7iw_uXvGgM0J';
-export const client=supabase(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'solaris-auth'}});
+export const client=supabase(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:window.location.pathname.startsWith('/equipe')?'solaris-auth-team':window.location.pathname.startsWith('/modelo')?'solaris-auth-model':'solaris-auth-patient'}});
 export const createClient=()=>client;
 const nativeFetch=window.fetch.bind(window);
 window.fetch=async(input:RequestInfo|URL,init?:RequestInit)=>{
