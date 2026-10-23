@@ -11,8 +11,8 @@ export async function POST(req:Request){try{
  const eligible=bootstrap||(person&&(portal==='team'?person.role!=='participante':person.role==='participante'));
  if(eligible){
   if(bootstrap){const {error:createError}=await db.auth.admin.createUser({email,email_confirm:true});if(createError&&!['email_exists','user_already_exists'].includes(createError.code||''))throw new Error('503|Não foi possível preparar o acesso.');}
-  const {error:sendError}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false}});
+  const {error:sendError}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:'https://solaris-pi-black.vercel.app/'+(portal==='team'?'equipe':'paciente')}});
   if(sendError){if(sendError.status===429)throw new Error('422|Aguarde um minuto antes de pedir outro código.');throw new Error('503|Não foi possível enviar o código agora. Tente novamente em alguns minutos.');}
  }
- return Response.json({message:'Se o e-mail estiver cadastrado nesta área, o código será enviado. Confira também o spam.'},{headers:{'Cache-Control':'private, no-store'}});
+ return Response.json({message:'Se o e-mail estiver cadastrado nesta área, as instruções de acesso serão enviadas. Confira também o spam.'},{headers:{'Cache-Control':'private, no-store'}});
  }catch(e){return errorResponse(e)}}

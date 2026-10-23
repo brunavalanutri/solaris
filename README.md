@@ -34,3 +34,9 @@ Importe este repositório na Vercel. vercel.json publica somente index.html. sta
 A paciente modelo usa uma conta Auth identificada pelo servidor e recebe somente dados fictícios em modo de visualização, sem ler o banco da turma ou suas publicações. Não usa os códigos de e-mail de pacientes reais.
 
 Testes cobrem envio restrito, perfis, sessões independentes, código, ausência de senha, cadastro, proteção de dados e isolamento do modelo. O envio real de e-mail depende da configuração do modelo e do serviço de e-mail do projeto Supabase.
+
+## Configuração confirmada no painel
+
+Site URL foi corrigido de localhost para https://solaris-pi-black.vercel.app. Os retornos /equipe, /paciente e / foram salvos no Supabase. Cada solicitação de acesso informa explicitamente o retorno de sua área.
+
+O painel informou que personalizar o template no plano gratuito exige SMTP próprio; também oferece personalização com o plano Pro. Até configurar esse envio, o template padrão envia um link de acesso. A tela aceita o link e também permite digitar um código se o template for habilitado posteriormente. O código numérico por e-mail ainda não foi homologado.
