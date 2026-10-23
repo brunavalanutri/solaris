@@ -19,3 +19,15 @@ No Supabase Authentication > URL Configuration, configure Site URL com https://s
 index.html: interface pronta. static-src: componentes de origem. supabase/functions/solaris-api: API publicada. O código Next.js anterior permanece como referência; a publicação usa somente o HTML estático.
 
 Testes de cadastro administrativo, datas, senha, duplicação e falha de gravação passaram com Auth simulado. A navegação da tela de entrada foi testada em DOM. Login de uma pessoa real ainda depende da ativação e cadastro.
+
+## Endereços separados
+
+Pacientes: https://solaris-pi-black.vercel.app/paciente
+
+Administradora e profissionais: https://solaris-pi-black.vercel.app/equipe
+
+A página inicial também abre o login da paciente. A ativação inicial da administradora aparece somente em /equipe. Após a autenticação, o perfil validado pelo servidor determina a área correta.
+
+## Paciente modelo
+
+Foi criada uma conta Auth marcada pelo servidor como modelo. Ela permite somente visualizar uma jornada fictícia com cinco páginas, sem ler o banco da turma, seus arquivos ou publicações reais. Credenciais de teste são fornecidas diretamente à administradora. O acesso não usa parâmetros de URL para atribuir permissões. Não há link público de demonstração.

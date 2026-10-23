@@ -8,7 +8,7 @@ const date=z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(s=>!Number.isNaN(Date.
 export async function GET(req:Request) {try{const c=await load(req);return Response.json(view(c.state,c.me),{headers:{'Cache-Control':'no-store'}})}catch(e){return errorResponse(e)}}
 export async function POST(req:Request) {let createdUserId:string|null=null;try {
  ensureOrigin(req);if(Number(req.headers.get('content-length'))>100000)throw new Error('413|Conteúdo muito grande.');
- const body:any=await req.json();const c=await load(req);const {state:s,me}=c;const action=z.string().parse(body.action);const d=body.data||{};let message='Salvo com sucesso.';
+ const body:any=await req.json();const c=await load(req);if(c.me.isModel)throw new Error('403|A paciente modelo é somente para visualização.');const {state:s,me}=c;const action=z.string().parse(body.action);const d=body.data||{};let message='Salvo com sucesso.';
  const clinical=['admin','nutri','endo'];const nutrition=['admin','nutri'];const team=['admin','nutri','endo','assistente'];const today=dateToday();const wi=weekIndex(s,today);const scoring=wi>=0&&wi<6&&today<=s.config.end;
  const participant=(id:string)=>{const p=s.people.find(p=>p.id===id&&p.role==='participante');if(!p)throw new Error('404|Participante não encontrada.');return p;};
  if(action==='person') {

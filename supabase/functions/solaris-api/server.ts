@@ -1,3 +1,4 @@
+import {modelPatient} from './model-patient.ts';
 import {createClient} from 'npm:@supabase/supabase-js@2.118.0';
 import {newState,type Person,type State} from './model.ts';
 export function createAdmin(){
@@ -12,6 +13,7 @@ export async function load(req:Request){
  const {data:auth,error:authError}=await db.auth.getUser(token);
  if(authError||!auth.user?.email||!auth.user.email_confirmed_at)throw new Error('401|Entre com sua conta confirmada para continuar.');
  const email=auth.user.email.toLowerCase(),id=auth.user.id;
+ if(auth.user.app_metadata?.solaris_model===true)return modelPatient(id,email);
  const read=async()=>{const {data,error}=await db.from('solaris_state').select('payload,revision').eq('id','main').maybeSingle();if(error)throw new Error('503|Não foi possível abrir o banco Solaris.');return data;};
  let row=await read();
  if(!row){
@@ -27,6 +29,7 @@ export async function load(req:Request){
  return {state,me,revision:Number(row.revision)};
 }
 export async function save(ctx:Awaited<ReturnType<typeof load>>,action:string){
+ if(ctx.revision<0||ctx.me.isModel)throw new Error('403|A paciente modelo é somente para visualização.');
  ctx.state.audit.push({date:new Date().toISOString(),actor:ctx.me.name,action});
  const {data,error}=await createAdmin().from('solaris_state').update({payload:ctx.state,revision:ctx.revision+1}).eq('id','main').eq('revision',ctx.revision).select('id');
  if(error)throw new Error('503|Não foi possível salvar no banco Solaris.');

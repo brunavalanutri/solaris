@@ -31,5 +31,5 @@ document.addEventListener('click',async e=>{
 document.addEventListener('submit',e=>{
  const form=e.target as HTMLFormElement;
  if(form.getAttribute('action')!=='/auth/signout')return;
- e.preventDefault();client.auth.signOut().then(()=>window.location.assign('/'));
+ e.preventDefault();client.auth.signOut().then(()=>window.location.assign(window.location.pathname.startsWith('/equipe')?'/equipe':'/paciente'));
 });
